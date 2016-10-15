@@ -1,0 +1,27 @@
+#!/bin/sh
+# vim:ft=scala
+exec scala -savecompiled "$0" "$@"
+!#
+
+import java.io.File
+
+
+def listGitRepo(dir: File): Set[File] = {
+  require(dir.isDirectory)
+
+  val files = dir.listFiles
+
+  val subDirs = if (files == null) Array[File]() else files.filter { _.isDirectory }
+
+  val gitDirs = subDirs.filter { d => 
+    val files = d.listFiles
+    files != null && files.exists { _.getName == ".git" } 
+  }
+
+  gitDirs.toSet ++ (subDirs.toSet -- gitDirs.toSet).flatMap { listGitRepo }
+
+}
+
+val startDir = new File(if (args.length < 1) "." else args(0))
+
+listGitRepo(startDir).toList.sorted.foreach { println }
