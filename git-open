@@ -1,0 +1,24 @@
+#!/bin/sh
+# vi: ft=scala
+exec scala -feature "$0" "$@"
+!#
+
+import scala.sys.process._
+
+val remote = 
+  args match {
+    case Array(r) => r
+    case _        => "origin"
+  }
+
+val GitProtocolR = """git@(.*):(.*)/(.*)\.git""".r
+
+val gitConfigUrl = s"git config --get remote.$remote.url".!!.trim
+
+val url = 
+ gitConfigUrl match {
+   case GitProtocolR(host, org, repo) => s"https://$host/$org/$repo"
+   case v                             => v
+ }
+
+s"open $url".!
